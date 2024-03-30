@@ -2,7 +2,7 @@
 
 ## Visualization of the Project
 
-![image](https://github.com/Sekunev/JWTloginRegisterPage/animation/AnimationProject.gif)
+![image](https://github.com/Sekunev/JWTloginRegisterPage/blob/main/animation/AnimationProject.gif)
 
 ## Description
 
