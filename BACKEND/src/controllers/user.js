@@ -26,13 +26,13 @@ module.exports = {
     const { password, ...accessUserData } = user.toJSON(); // user nesnesinden parolayı kaldır
 
     const accessToken = jwt.sign(accessUserData, process.env.ACCESS_KEY, {
-      expiresIn: "30s",
+      expiresIn: "1m",
     });
 
     const refreshToken = jwt.sign(
       { _id: user._id, password: user.password },
       process.env.REFRESH_KEY,
-      { expiresIn: "1m" }
+      { expiresIn: "2m" }
     );
 
     res.status(201).send({

@@ -170,10 +170,10 @@ const Login = () => {
               </div>
               <div className="text-right">
                 <Link
-                  href="/forgetpassword"
+                  href="/login"
                   className="cursor-pointer text-blue-500 text-sm font-[600] "
                 >
-                  Forgot Passport
+                  Forgot Password
                 </Link>
               </div>
               <div className="flex items-start mb-5">

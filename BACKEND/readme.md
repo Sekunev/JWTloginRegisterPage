@@ -1,34 +1,29 @@
-# Projemizin Adı
+# BACKEND
 
-Bu proje, Node.js ve Express kullanılarak geliştirilmiş bir web uygulamasıdır.
+This project is a web application developed using Node.js and Express.
 
-## Kurulum
+## Installation
 
-1. Proje dosyalarını bilgisayarınıza klonlayın:
-
-   ```bash
-   git clone <proje-repo-url>
-   ```
-
-2. Proje dizinine gidin:
+1. Clone the project files to your computer:
 
    ```bash
-   cd <proje-dizin-adi>
+   git clone <project-repo-url>
    ```
 
-3. Bağımlılıkları yükleyin:
+## Navigate to the project directory:
 
-   ```bash
-   npm install
+```bash
+cd <project-directory>
+```
 
-   ```
+## Install dependencies:
 
-   globalinizde nodemon kurulu değilse kurmayı unutmayın.
+npm install
 
-## Kullanım
+### Make sure to install nodemon globally if it's not already installed.
 
-Projeyi başlatmak için terminalde şu komutu çalıştırın:
+## Usage
 
-    ```bash
-    nodemon
-    ```
+```bash
+nodemon
+```
