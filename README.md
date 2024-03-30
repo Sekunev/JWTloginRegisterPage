@@ -6,18 +6,18 @@
 
 ## Description
 
-### Backend endPoints:
+#### Backend endPoints:
 
-### register --> base_url/register
+#### register --> base_url/register
 
-### login --> base_url/auth/login/
+#### login --> base_url/auth/login/
 
-### logout --> base_url/auth/logout
+#### logout --> base_url/auth/logout
 
-### getMe --> base_url/
+#### getMe --> base_url/
 
-### refreshToken --> base_url/auth/refresh
+#### refreshToken --> base_url/auth/refresh
 
-### Userlist --> base_url/users/
+#### Userlist --> base_url/users/
 
-### To quickly test the access token and Refresh token lifetimes, the access token duration is set to 1 minute and the refreshToken duration is set to 2 minutes.
+##### To quickly test the access token and Refresh token lifetimes, the access token duration is set to 1 minute and the refreshToken duration is set to 2 minutes.
