@@ -39,7 +39,7 @@ export const refreshAccsessToken = async (refreshToken) => {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem("accessToken", data.bearer.accessToken);
-        console.log("Token Yenilendi");
+        console.log("AccessToken Yenilendi");
         return data.bearer.accessToken;
       } else {
         console.log(
