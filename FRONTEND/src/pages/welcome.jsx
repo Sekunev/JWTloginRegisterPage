@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "react-hot-toast";
 import config from "../config";
+import Cookies from "js-cookie";
+import { checkAuth } from "@/authservice/auth/withauth";
 
 const Welcome = () => {
   const [isToken, setIsToken] = useState(true);
@@ -11,7 +13,7 @@ const Welcome = () => {
 
   const router = useRouter();
 
-  //! logout fonksiyonu ile veri tabanındaki (Simple token  için) token'i sil. JWT kullandığımız için veri tabanındaki token silinmez. Bunun yerine localStorage'deki token bilgisini siliyoruz.
+  //! logout fonksiyonu ile veri tabanındaki (Simple token  için) token'i sil. JWT kullandığımız için veri tabanındaki token silinmez. Bunun yerine Cookies'deki token bilgisini siliyoruz.
   const logout = async () => {
     try {
       await fetch(`${config.API_BASE_URL}/auth/logout/`, {
@@ -20,9 +22,8 @@ const Welcome = () => {
           "Content-Type": "application/json",
         },
       });
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("token");
+      Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
       setIsToken(false);
       toast.success("Logged out successfully", {
         position: "top-left",
@@ -37,16 +38,25 @@ const Welcome = () => {
 
   //! login olan kullanıcı bilgilerini data state'ine Aktar.
   const handleUser = async () => {
+    // accessToken'i al
+    //! kullanıcıyı kontrol et
+    await checkAuth();
+    const accessToken = Cookies.get("accessToken");
+    // console.log(accessToken);
     try {
       const data = await fetch(`${config.API_BASE_URL}/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + localStorage.getItem("accessToken"),
+          Authorization: "Bearer " + accessToken,
         },
       }).then((response) => response.json());
 
+      //! Kullanıcı Yoksa Login sayfasına yönlendir.
       setData(data);
+      if (!data.user) {
+        router.push("/login");
+      }
     } catch (error) {
       console.log(error);
     }

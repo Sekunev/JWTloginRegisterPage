@@ -40,10 +40,12 @@ const Login = () => {
 
       const data = await res.json();
 
-      //! dönen veride hata yoksa Token'ları localStorage' da sakla
+      //! dönen veride hata yoksa Token'ları cookie'ye sakla
       if (data.error === false) {
-        localStorage.setItem("accessToken", data.bearer.accessToken);
-        localStorage.setItem("refreshToken", data.bearer.refreshToken);
+        // accessToken ve refreshToken'ı cookie'ye set et
+        document.cookie = `accessToken=${data.bearer.accessToken}; path=/`;
+        document.cookie = `refreshToken=${data.bearer.refreshToken}; path=/`;
+
         toast.success("Logged in successfully", {
           position: "top-left",
         });

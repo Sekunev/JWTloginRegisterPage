@@ -1,4 +1,6 @@
 import config from "../../config";
+import Cookies from "js-cookie";
+
 //! accessToken ile istek yaparak login olan user'i return eder.
 export const verifyAccsessToken = async (accessToken) => {
   try {
@@ -24,7 +26,7 @@ export const verifyAccsessToken = async (accessToken) => {
   }
 };
 
-//! Süresi dolan AccessToken için istek yaparak yeni AccessToken üretir. localStorage'a set eder.
+//! Süresi dolan AccessToken için istek yaparak yeni AccessToken üretir. Cookies'a set eder.
 export const refreshAccsessToken = async (refreshToken) => {
   try {
     if (refreshToken) {
@@ -38,7 +40,9 @@ export const refreshAccsessToken = async (refreshToken) => {
 
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem("accessToken", data.bearer.accessToken);
+        //! accessToken ve refreshToken'ı cookie'ye set et
+        Cookies.set("accessToken", data.bearer.accessToken);
+
         console.log("AccessToken Yenilendi");
         return data.bearer.accessToken;
       } else {
