@@ -1,23 +1,23 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { refreshAccsessToken, verifyAccsessToken } from ".";
+import Cookies from "js-cookie";
 
 //! checkAuth kullanıcının oturum açma durumunu kontrol etmek ve gerekirse accessToken ve refreshToken'i güncellemek için kullanılır.
 
-const checkAuth = async () => {
-  const accessToken = localStorage.getItem("accessToken");
-  const refreshToken = localStorage.getItem("refreshToken");
-
-  // console.log("accessToken", accessToken);
-  // console.log("refreshToken", refreshToken);
+export const checkAuth = async () => {
+  //! Cookie'den  tokenları al
+  const accessToken = Cookies.get("accessToken");
+  const refreshToken = Cookies.get("refreshToken");
 
   if (!accessToken) {
     console.log("AccessToken Bulunmuyor");
-    throw new Error("AccessTokenNotFound");
+    // throw new Error("AccessTokenNotFound");
   }
 
   try {
     const response = await verifyAccsessToken(accessToken);
+    console.log("response", response);
 
     if (response) {
       console.log("AccessToken Aktif");
@@ -28,38 +28,24 @@ const checkAuth = async () => {
         const refreshResponse = await refreshAccsessToken(refreshToken);
         if (refreshResponse) {
           console.log("RefreshToken Çalıştı. AccessToken'i güncelledi");
-          localStorage.setItem("accessToken", refreshResponse);
+          Cookies.set("accessToken", refreshResponse);
+
           return;
         } else {
           console.log("RefreshToken Çekilemedi veya süresi geçti");
-          throw new Error("RefreshTokenFailed");
+
+          // throw new Error("RefreshTokenFailed");
         }
       } catch (refreshError) {
         console.log("RefreshToken Çekilemedi veya süresi geçti");
-        throw new Error("RefreshTokenFailed");
+        // throw new Error("RefreshTokenFailed");
       }
     }
   } catch (error) {
     console.log(error);
-    if (error.response && error.response.status === 401) {
-      //   console.log("Acsess'in süresi dolmuş");
-      //   // AccessToken is expired or invalid, try refreshing
-      //   try {
-      //     const refreshResponse = await refreshAccsessToken(refreshToken);
-      //     console.log("refresh token Çalıştı Acsess güncellendi ");
-      //     // const refreshResponse = await axios.post('/api/refresh', {
-      //     //   refreshToken
-      //     // });
-      //     localStorage.setItem("accessToken", refreshResponse);
-      //     return;
-      //   } catch (refreshError) {
-      //     console.log("RefreshToken Çekilemedi veya süresi geçti");
-      //     throw new Error("RefreshTokenFailed");
-      //   }
-    }
   }
 
-  throw new Error("UnknownError");
+  // throw new Error("UnknownError");
 };
 
 //! withAuth oturum açma durumunu kontrol eder ve uygun şekilde yönlendirme işlemlerini gerçekleştirir.
@@ -73,16 +59,9 @@ const withAuth = (WrappedComponent) => {
           await checkAuth();
           router.push("/");
         } catch (error) {
-          if (
-            error.message === "AccessTokenNotFound" ||
-            error.message === "UnknownError" ||
-            error.message === "RefreshTokenFailed"
-          ) {
-            // If access token not found or refresh failed or unknown error, redirect to login
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-            router.push("/login");
-          }
+          Cookies.remove("accessToken");
+          Cookies.remove("refreshToken");
+          router.push("/login");
         }
       };
 
