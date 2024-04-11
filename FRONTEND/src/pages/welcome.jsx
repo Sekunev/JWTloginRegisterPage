@@ -6,10 +6,13 @@ import { Toaster, toast } from "react-hot-toast";
 import config from "../config";
 import Cookies from "js-cookie";
 import { checkAuth } from "@/authservice/auth/withauth";
-
+import { useDispatch, useSelector } from "react-redux";
+import { setUser, removeUser } from "../features/authSlice";
 const Welcome = () => {
   const [isToken, setIsToken] = useState(true);
-  const [data, setData] = useState("");
+
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   const router = useRouter();
 
@@ -24,6 +27,7 @@ const Welcome = () => {
       });
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
+      dispatch(removeUser());
       setIsToken(false);
       toast.success("Logged out successfully", {
         position: "top-left",
@@ -42,7 +46,7 @@ const Welcome = () => {
     //! kullanıcıyı kontrol et
     await checkAuth();
     const accessToken = Cookies.get("accessToken");
-    // console.log(accessToken);
+
     try {
       const data = await fetch(`${config.API_BASE_URL}/`, {
         method: "GET",
@@ -53,7 +57,8 @@ const Welcome = () => {
       }).then((response) => response.json());
 
       //! Kullanıcı Yoksa Login sayfasına yönlendir.
-      setData(data);
+
+      dispatch(setUser(data.user));
       if (!data.user) {
         router.push("/login");
       }
@@ -69,12 +74,11 @@ const Welcome = () => {
 
   return (
     <section className="py-10 h-[100vh] flex justify-center items-center flex-col gap-8">
-      {data?.user ? (
+      {user ? (
         <>
           {isToken ? (
             <h1 className="text-3xl font-bold text-center">
-              Welcome{" "}
-              <span className="text-green-500">{data.user.username}</span>
+              Welcome <span className="text-green-500">{user.username}</span>
             </h1>
           ) : (
             <h1 className="text-3xl font-bold text-center text-red-600">
@@ -88,7 +92,7 @@ const Welcome = () => {
         </h1>
       )}
 
-      {data.user ? (
+      {user ? (
         <>
           {isToken ? (
             <button
