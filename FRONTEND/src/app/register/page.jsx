@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import GoogleIcon from "../../../public/assest/GoogleIcon";
@@ -10,23 +11,17 @@ import config from "../../config";
 import { Hide, Show } from "../components/icon";
 
 const Register = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    //! username, email veya password girişi yapılmamışsa toast uyarı mesajı.
-    if (!email || !password || !username) {
-      toast.error("Please fill all fields", {
-        position: "top-left",
-      });
-      return;
-    }
-
+  const onSubmit = async (data) => {
     //! ilgili url'e register için istek yap dönen veriyi json'a çevir ve data değişkenine Aktar.
     try {
       const res = await fetch(`${config.API_BASE_URL}/register`, {
@@ -34,37 +29,28 @@ const Register = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-        }),
+        body: JSON.stringify(data),
       });
 
-      const data = await res.json();
+      const responseData = await res.json();
 
-      //! dönen veride hata yoksa Token'ları  localStorage' da sakla
-      if (data.error === false) {
-        // accessToken ve refreshToken'ı cookie'ye set et
-        document.cookie = `accessToken=${data.bearer.accessToken}; path=/`;
-        document.cookie = `refreshToken=${data.bearer.refreshToken}; path=/`;
+      if (responseData.error === false) {
+        document.cookie = `accessToken=${responseData.bearer.accessToken}; path=/`;
+        document.cookie = `refreshToken=${responseData.bearer.refreshToken}; path=/`;
         toast.success("Logged in successfully", {
           position: "top-left",
         });
-        setEmail("");
-        setPassword("");
-        setUsername("");
         router.push("/");
-        return;
+      } else {
+        toast.error("Invalid Credential", {
+          position: "top-left",
+        });
       }
-      toast.error("Invalid Credential", {
-        position: "top-left",
-      });
     } catch (error) {
       toast.error("Something went wrong", {
         position: "top-left",
       });
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -130,7 +116,7 @@ const Register = () => {
                 style={{ borderBottom: "1px solid #ccc", width: "45%" }}
               ></div>
             </div>
-            <form className="max-w-sm">
+            <form className="max-w-sm" onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-5">
                 <label
                   htmlFor="username"
@@ -141,11 +127,18 @@ const Register = () => {
                 <input
                   type="text"
                   id="username"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  {...register("username", { required: true })}
+                  className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
+                    errors.username ? "border-red-500" : ""
+                  }`}
                   placeholder="rachel kawen"
                   required=""
-                  onChange={(e) => setUsername(e.target.value)}
                 />
+                {errors.username && (
+                  <span className="text-red-500 text-sm">
+                    Username is required
+                  </span>
+                )}
               </div>
               <div className="mb-5">
                 <label
@@ -157,12 +150,22 @@ const Register = () => {
                 <input
                   type="email"
                   id="email"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  {...register("email", {
+                    required: true,
+                    pattern: /^\S+@\S+$/i,
+                  })}
+                  className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
+                    errors.email ? "border-red-500" : ""
+                  }`}
                   placeholder="rachel.kawen@gmail.com"
                   required=""
                   autoComplete="email"
-                  onChange={(e) => setEmail(e.target.value)}
                 />
+                {errors.email && (
+                  <span className="text-red-500 text-sm">
+                    Please enter a valid email address
+                  </span>
+                )}
               </div>
               <div className="relative">
                 <label
@@ -174,12 +177,19 @@ const Register = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  {...register("password", {
+                    required: true,
+                    pattern:
+                      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+                  })}
+                  className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
+                    errors.password ? "border-red-500" : ""
+                  }`}
                   required=""
                   name="password"
                   placeholder="******"
-                  onChange={(e) => setPassword(e.target.value)}
                 />
+
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 top-6 flex items-center pr-3 focus:outline-none"
@@ -187,7 +197,19 @@ const Register = () => {
                 >
                   {!showPassword ? <Show /> : <Hide />}
                 </button>
+                {errors.password && errors.password.type === "required" && (
+                  <span className="text-red-500 text-sm">
+                    Password is required
+                  </span>
+                )}
               </div>
+              {errors.password && errors.password.type === "pattern" && (
+                <span className="text-red-500 text-sm">
+                  Password must contain at least one lowercase letter, one
+                  uppercase letter, one number, and one special character
+                  (@$!%*?&) and must be at least 8 characters long
+                </span>
+              )}
               <p className="text-sm my-5">
                 By Creating an account, you agree to our{" "}
                 <span
@@ -206,7 +228,6 @@ const Register = () => {
               </p>
               <button
                 type="submit"
-                onClick={handleSubmit}
                 className="text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-[2rem] text-sm w-full sm:w-[8rem] px-5 py-2.5 text-center "
               >
                 Sign Up

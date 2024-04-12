@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import React, { useState } from "react";
 import GoogleIcon from "../../../public/assest/GoogleIcon";
 import TwitterIcon from "../../../public/assest/TwitterIcon";
@@ -10,21 +11,16 @@ import config from "../../config";
 import { Hide, Show } from "../components/icon";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    //! email veya password girişi yapılmamışsa toast uyarı mesajı
-    if (!email || !password) {
-      toast.error("Please fill all fields", {
-        position: "top-left",
-      });
-      return;
-    }
+  const onSubmit = async (data) => {
     //! ilgili url'e login için istek yap dönen veriyi json'a çevir ve data değişkenine Aktar.
     try {
       const res = await fetch(`${config.API_BASE_URL}/auth/login/`, {
@@ -32,38 +28,30 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(data),
       });
 
-      const data = await res.json();
+      const responseData = await res.json();
 
-      //! dönen veride hata yoksa Token'ları cookie'ye sakla
-      if (data.error === false) {
-        // accessToken ve refreshToken'ı cookie'ye set et
-        document.cookie = `accessToken=${data.bearer.accessToken}; path=/`;
-        document.cookie = `refreshToken=${data.bearer.refreshToken}; path=/`;
+      if (responseData.error === false) {
+        document.cookie = `accessToken=${responseData.bearer.accessToken}; path=/`;
+        document.cookie = `refreshToken=${responseData.bearer.refreshToken}; path=/`;
 
         toast.success("Logged in successfully", {
           position: "top-left",
         });
-
         //! state'leri boşalt ve ana sayfaya yönel.
-        setEmail("");
-        setPassword("");
         router.push("/");
-        return;
+      } else {
+        toast.error("Invalid Credential", {
+          position: "top-left",
+        });
       }
-      toast.error("Invalid Credential", {
-        position: "top-left",
-      });
     } catch (error) {
       toast.error("Something went wrong", {
         position: "top-left",
       });
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -128,7 +116,7 @@ const Login = () => {
                 style={{ borderBottom: "1px solid #ccc", width: "45%" }}
               ></div>
             </div>
-            <form className="max-w-sm">
+            <form className="max-w-sm" onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-5">
                 <label
                   htmlFor="email"
@@ -139,12 +127,22 @@ const Login = () => {
                 <input
                   type="email"
                   id="email"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  {...register("email", {
+                    required: true,
+                    pattern: /^\S+@\S+$/i,
+                  })}
+                  className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
+                    errors.email ? "border-red-500" : ""
+                  }`}
                   placeholder="rachel.kawen@gmail.com"
                   required=""
                   autoComplete="email"
-                  onChange={(e) => setEmail(e.target.value)}
                 />
+                {errors.email && (
+                  <span className="text-red-500 text-sm">
+                    Please enter a valid email address
+                  </span>
+                )}
               </div>
               <div className="relative">
                 <label
@@ -156,11 +154,15 @@ const Login = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  {...register("password", {
+                    required: true,
+                  })}
+                  className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${
+                    errors.password ? "border-red-500" : ""
+                  }`}
                   required=""
                   name="password"
                   placeholder="******"
-                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -169,6 +171,11 @@ const Login = () => {
                 >
                   {!showPassword ? <Show /> : <Hide />}
                 </button>
+                {errors.password && (
+                  <span className="text-red-500 text-sm">
+                    Password is required
+                  </span>
+                )}
               </div>
               <div className="text-right">
                 <Link
