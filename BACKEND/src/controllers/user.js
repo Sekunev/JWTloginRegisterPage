@@ -17,6 +17,20 @@ module.exports = {
   },
 
   create: async (req, res) => {
+    /*
+            #swagger.tags = ["Users"]
+            #swagger.summary = "User Create"
+            #swagger.description = 'Register with  email and password for get JWT'
+            #swagger.parameters['body'] = {
+                in: 'body',
+                required: true,
+                schema: {
+                    "username": "example",
+                    "password": "aA*123456",
+                    "email": "example@site.com",
+                }
+            }
+        */
     const data = await User.create(req.body);
 
     const { username, email } = req.body;

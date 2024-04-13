@@ -10,7 +10,63 @@ const Token = require("../models/token");
 const passwordEncrypt = require("../helpers/passwordEncrypt");
 
 module.exports = {
+  register: async (req, res) => {
+    /*
+            #swagger.tags = ["Authentication"]
+            #swagger.summary = "Register"
+            #swagger.description = 'Register with  email and password for get JWT'
+            #swagger.parameters["body"] = {
+                in: "body",
+                required: true,
+                schema: {
+                  "username": "example",
+                    "email": "example@gmail.com",
+                    "password": "aA*123456",
+                }
+            }
+        */
+    const data = await User.create(req.body);
+    const { username, email, password } = req.body;
+
+    if (username || email) {
+      const user = await User.findOne({ $or: [{ username }, { email }] });
+
+      // JWT:
+      const { password, ...accessUserData } = user.toJSON(); // user nesnesinden parolayı kaldır
+
+      const accessToken = jwt.sign(accessUserData, process.env.ACCESS_KEY, {
+        expiresIn: "1m",
+      });
+
+      const refreshToken = jwt.sign(
+        { _id: user._id, password: user.password },
+        process.env.REFRESH_KEY,
+        { expiresIn: "2m" }
+      );
+      res.status(201).send({
+        error: false,
+        bearer: { accessToken, refreshToken },
+      });
+    } else {
+      res.errorStatusCode = 401;
+      throw new Error("Please enter username/email and password.");
+    }
+  },
   login: async (req, res) => {
+    /*
+            #swagger.tags = ["Authentication"]
+            #swagger.summary = "Login"
+            #swagger.description = 'Login with username (or email) and password for get simpleToken and JWT'
+            #swagger.parameters["body"] = {
+                in: "body",
+                required: true,
+                schema: {
+                    "email": "example@gmail.com",
+                    "password": "aA*123456",
+                }
+            }
+        */
+
     const { username, email, password } = req.body;
 
     if ((username || email) && password) {
@@ -50,6 +106,20 @@ module.exports = {
   },
 
   refresh: async (req, res) => {
+    /*
+            #swagger.tags = ['Authentication']
+            #swagger.summary = 'JWT: Refresh'
+            #swagger.description = 'Refresh accessToken with refreshToken'
+            #swagger.parameters['body'] = {
+                in: 'body',
+                required: true,
+                schema: {
+                    bearer: {
+                        refresh: '...refreshToken...'
+                    }
+                }
+            }
+        */
     const refreshToken = req.body?.refreshToken;
 
     if (refreshToken) {
@@ -114,6 +184,11 @@ module.exports = {
   },
 
   logout: async (req, res) => {
+    /*
+            #swagger.tags = ["Authentication"]
+            #swagger.summary = "simpleToken: Logout"
+            #swagger.description = 'Delete token key.'
+        */
     const auth = req.headers?.authorization || null; // Token ...tokenKey... // Bearer ...accessToken...
     const tokenKey = auth ? auth.split(" ") : null; // ['Token', '...tokenKey...'] // ['Bearer', '...accessToken...']
 

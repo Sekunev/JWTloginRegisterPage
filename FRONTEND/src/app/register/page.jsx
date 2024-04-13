@@ -24,7 +24,7 @@ const Register = () => {
   const onSubmit = async (data) => {
     //! ilgili url'e register için istek yap dönen veriyi json'a çevir ve data değişkenine Aktar.
     try {
-      const res = await fetch(`${config.API_BASE_URL}/register`, {
+      const res = await fetch(`${config.API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

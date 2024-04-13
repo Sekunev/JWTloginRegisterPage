@@ -26,17 +26,43 @@ dbConnection();
 /* ------------------------------------------------------- */
 // Middlewares:
 
+// Logging:
+// npm i morgan
+// https://expressjs.com/en/resources/middleware/morgan.html
+const morgan = require("morgan");
+// console.log(morgan);
+app.use(morgan("combined"));
+
+//? Write logs to file - day by day:
+const fs = require("fs");
+const now = new Date();
+const today = now.toISOString().split("T")[0];
+app.use(
+  morgan("combined", {
+    stream: fs.createWriteStream(`./logs/${today}.log`, { flags: "a" }),
+  })
+);
 // Accept JSON:
 app.use(express.json());
-
-// SessionsCookies:
-// app.use(require("cookie-session")({ secret: process.env.SECRET_KEY }));
 
 // res.getModelList():
 app.use(require("./src/middlewares/findSearchSortPage"));
 
 //* middlewares/authentication.js "Kimlik Kontrol"
 app.use(require("./src/middlewares/authentication"));
+
+// Swagger-UI Middleware:
+// npm i swagger-ui-express
+const swaggerUi = require("swagger-ui-express");
+const swaggerJson = require("./swagger.json");
+// Parse/Run swagger.json and publish on any URL:
+app.use(
+  "/docs/swagger",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerJson, {
+    swaggerOptions: { persistAuthorization: true },
+  })
+);
 
 /* ------------------------------------------------------- */
 
