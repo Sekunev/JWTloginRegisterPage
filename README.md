@@ -20,4 +20,8 @@ Backend endPoints:
 
 - Userlist --> base_url/users/
 
+ ## Backend documentation
+  
+- for Swagger  --> (http://127.0.0.1:8000/docs/swagger)
+
 - To quickly test the access token and Refresh token lifetimes, the access token duration is set to 1 minute and the refreshToken duration is set to 2 minutes.
